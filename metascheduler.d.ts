@@ -17,15 +17,15 @@ export type Task = {
   every: Every;
 };
 
-export type TaskTemplate = Omit<Task, 'id'> & {
+export type TaskTemplate = Omit<Task, "id"> & {
   persistent?: boolean;
 };
 
 export interface Storage {
   init: () => Promise<void>;
-  create: (task: Task) => Promise<void>;
+  create: (task: Task) => Promise<string>;
   delete: (id: string) => Promise<void>;
-  getAll: () => Promise<void>;
+  getAll: () => Promise<Task[]>;
 }
 
 export class MetaScheduler {

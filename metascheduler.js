@@ -1,10 +1,10 @@
-'use strict';
+"use strict";
 
-const { ThreadPool } = require('./src/pool');
-const crypto = require('crypto');
-const { sleep, checkTaskReady } = require('./src/utils');
-const { parseEvery } = require('metautil');
-const { FileStorage } = require('./src/storage');
+const { ThreadPool } = require("./src/pool");
+const crypto = require("crypto");
+const { sleep, checkTaskReady } = require("./src/utils");
+const { parseEvery } = require("metautil");
+const { FileStorage } = require("./src/storage");
 const MAX_QUEUE_TIME_RANGE = 1000 * 60 * 60 * 24;
 const TICK_DELAY = 100;
 
@@ -39,13 +39,13 @@ class MetaScheduler {
     const expiredTasks = tasks.filter((task) =>
       task.every.YY > -1
         ? checkTaskReady(task.every, new Date(), this.tickDelay)
-        : false,
+        : false
     );
     const expiredIds = expiredTasks.map(({ id }) => id);
     await Promise.all(expiredIds.map((id) => this.storage.delete(id)));
     const validTasks = tasks.filter(({ id }) => !expiredIds.includes(id));
     this.queue.push(...validTasks);
-    process.on('SIGINT', async () => {
+    process.on("SIGINT", async () => {
       this.finished = true;
       await this.pool.shutdown();
     });
@@ -84,15 +84,15 @@ class MetaScheduler {
     const task = this.queue.find((task) => task.id);
     if (!task) return;
     this.queue = this.queue.filter((task) => task.id !== id);
-    await this.storage.delete(id);
+    if (task.persistent) await this.storage.delete(id);
   }
 
   prepareTask({ persistent = true, every, method }) {
     return {
-      id: crypto.randomBytes(16).toString('hex'),
+      id: crypto.randomBytes(16).toString("hex"),
       persistent,
       method: method.toString(),
-      every: typeof every === 'string' ? parseEvery(every) : every,
+      every: typeof every === "string" ? parseEvery(every) : every,
     };
   }
 
@@ -100,12 +100,6 @@ class MetaScheduler {
     const preparedTask = this.prepareTask(task);
     if (preparedTask.persistent) {
       await this.storage.create(preparedTask);
-    }
-    if (
-      preparedTask.type === 'default' &&
-      Number(new Date(preparedTask.start)) > Date.now() + MAX_QUEUE_TIME_RANGE
-    ) {
-      return preparedTask.id;
     }
     this.queue.push(preparedTask);
     return preparedTask.id;
