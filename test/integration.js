@@ -1,21 +1,21 @@
-'use strict';
+"use strict";
 
-const metatests = require('metatests');
-const { existsSync } = require('node:fs');
-const { readFile, rm, rmdir } = require('node:fs/promises');
-const { MetaScheduler } = require('../metascheduler');
-const { sleep, dateToEvery } = require('../src/utils');
-const crypto = require('crypto');
+const metatests = require("metatests");
+const { existsSync } = require("node:fs");
+const { readFile, rm, rmdir } = require("node:fs/promises");
+const { MetaScheduler } = require("../metascheduler");
+const { sleep, dateToEvery } = require("../src/utils");
+const crypto = require("crypto");
 
-metatests.test('Should create date task', async (test) => {
+metatests.test("Should create date task", async (test) => {
   const delay = 2000;
   const now = Date.now();
   const correction = 1000;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString('hex')}.txt`,
-    testString: 'TEST',
-    tasksPath: `tasks${crypto.randomBytes(16).toString('hex')}`,
+    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testString: "TEST",
+    tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
 
   const m = new MetaScheduler({
@@ -24,14 +24,14 @@ metatests.test('Should create date task', async (test) => {
     workerData: {
       data,
     },
-    dependencies: ['require'],
+    dependencies: ["require"],
     timeout: 2000,
   });
 
   await m.start();
 
   const task = async () => {
-    const { writeFile } = require('node:fs/promises');
+    const { writeFile } = require("node:fs/promises");
     await writeFile(data.testFileName, data.testString);
   };
 
@@ -42,7 +42,7 @@ metatests.test('Should create date task', async (test) => {
 
   await sleep(delay + correction);
 
-  const value = await readFile(data.testFileName, { encoding: 'utf-8' });
+  const value = await readFile(data.testFileName, { encoding: "utf-8" });
 
   await m.stop();
 
@@ -54,15 +54,15 @@ metatests.test('Should create date task', async (test) => {
   test.end();
 });
 
-metatests.test('Should timeout task', async (test) => {
+metatests.test("Should timeout task", async (test) => {
   const delay = 1000;
   const now = Date.now();
-  const correction = 1000;
+  const correction = 3000;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString('hex')}.txt`,
-    testString: 'TEST',
-    tasksPath: `tasks${crypto.randomBytes(16).toString('hex')}`,
+    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testString: "TEST",
+    tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
 
   const m = new MetaScheduler({
@@ -71,14 +71,14 @@ metatests.test('Should timeout task', async (test) => {
     workerData: {
       data,
     },
-    dependencies: ['require', 'setTimeout'],
+    dependencies: ["require", "setTimeout", "console"],
     timeout: 2000,
   });
 
   await m.start();
 
   const task = async () => {
-    const { writeFile } = require('node:fs/promises');
+    const { writeFile } = require("node:fs/promises");
     await new Promise((resolve) => setTimeout(resolve, 3000));
     await writeFile(data.testFileName, data.testString);
   };
@@ -100,15 +100,15 @@ metatests.test('Should timeout task', async (test) => {
   test.end();
 });
 
-metatests.test('Should cancel task', async (test) => {
+metatests.test("Should cancel task", async (test) => {
   const delay = 1000;
   const now = Date.now();
   const correction = 1000;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString('hex')}.txt`,
-    testString: 'TEST',
-    tasksPath: `tasks${crypto.randomBytes(16).toString('hex')}`,
+    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testString: "TEST",
+    tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
 
   const m = new MetaScheduler({
@@ -117,14 +117,14 @@ metatests.test('Should cancel task', async (test) => {
     workerData: {
       data,
     },
-    dependencies: ['require'],
+    dependencies: ["require"],
     timeout: 2000,
   });
 
   await m.start();
 
   const task = async () => {
-    const { writeFile } = require('node:fs/promises');
+    const { writeFile } = require("node:fs/promises");
     await writeFile(data.testFileName, data.testString);
   };
 
@@ -147,15 +147,15 @@ metatests.test('Should cancel task', async (test) => {
   test.end();
 });
 
-metatests.test('Should create every task', async (test) => {
+metatests.test("Should create every task", async (test) => {
   const every = {
     ss: 1,
   };
   const delay = 3000;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString('hex')}.txt`,
-    tasksPath: `tasks${crypto.randomBytes(16).toString('hex')}`,
+    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
 
   const m = new MetaScheduler({
@@ -164,15 +164,15 @@ metatests.test('Should create every task', async (test) => {
     workerData: {
       data,
     },
-    dependencies: ['require'],
+    dependencies: ["require"],
     timeout: 2000,
   });
 
   await m.start();
 
   const task = async () => {
-    const { writeFile, readFile } = require('node:fs/promises');
-    const { existsSync } = require('node:fs');
+    const { writeFile, readFile } = require("node:fs/promises");
+    const { existsSync } = require("node:fs");
     const isFileExists = existsSync(data.testFileName);
     let counter = 0;
     if (isFileExists) {
@@ -188,7 +188,7 @@ metatests.test('Should create every task', async (test) => {
 
   await sleep(delay);
 
-  const value = await readFile(data.testFileName, { encoding: 'utf-8' });
+  const value = await readFile(data.testFileName, { encoding: "utf-8" });
 
   await m.cancel(id);
 
@@ -198,7 +198,7 @@ metatests.test('Should create every task', async (test) => {
 
   await rmdir(data.tasksPath);
 
-  test.strictSame(value, '3');
+  test.strictSame(value, "3");
   test.end();
 });
 
@@ -264,7 +264,7 @@ metatests.test('Should create every task', async (test) => {
 // //   test.end();
 // // });
 
-metatests.test('Should handle multiple task simultaneously', async (test) => {
+metatests.test("Should handle multiple task simultaneously", async (test) => {
   const every = { ss: 1 };
   const delay1 = 1000;
   const delay2 = 2000;
@@ -273,9 +273,9 @@ metatests.test('Should handle multiple task simultaneously', async (test) => {
   const sleepDelay = 5000;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString('hex')}.txt`,
-    testString: 'TEST',
-    tasksPath: `tasks${crypto.randomBytes(16).toString('hex')}`,
+    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testString: "TEST",
+    tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
 
   const m = new MetaScheduler({
@@ -284,7 +284,7 @@ metatests.test('Should handle multiple task simultaneously', async (test) => {
     workerData: {
       data,
     },
-    dependencies: ['console'],
+    dependencies: ["console"],
     timeout: 2000,
   });
 
