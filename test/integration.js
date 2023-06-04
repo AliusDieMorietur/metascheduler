@@ -151,7 +151,7 @@ metatests.test("Should create every task", async (test) => {
   const every = {
     ss: 1,
   };
-  const delay = 3000;
+  const delay = 3500;
 
   const data = {
     testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
@@ -166,6 +166,7 @@ metatests.test("Should create every task", async (test) => {
     },
     dependencies: ["require"],
     timeout: 2000,
+    debug: true,
   });
 
   await m.start();
@@ -270,10 +271,15 @@ metatests.test("Should handle multiple task simultaneously", async (test) => {
   const delay2 = 2000;
   const delay3 = 3000;
   const now = Date.now();
-  const sleepDelay = 5000;
+  const sleepDelay = 4500;
 
   const data = {
-    testFileName: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName1: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName2: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName3: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName4: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName5: `test${crypto.randomBytes(16).toString("hex")}.txt`,
+    testFileName6: `test${crypto.randomBytes(16).toString("hex")}.txt`,
     testString: "TEST",
     tasksPath: `tasks${crypto.randomBytes(16).toString("hex")}`,
   };
@@ -284,34 +290,41 @@ metatests.test("Should handle multiple task simultaneously", async (test) => {
     workerData: {
       data,
     },
-    dependencies: ["console"],
+    dependencies: ["require"],
     timeout: 2000,
+    debug: true,
   });
 
   await m.start();
 
   const task1 = async () => {
-    console.log(`Task 1`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName1, String(data.testString));
   };
 
   const task2 = async () => {
-    console.log(`Task 2`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName2, String(data.testString));
   };
 
   const task3 = async () => {
-    console.log(`Task 3`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName3, String(data.testString));
   };
 
   const task4 = async () => {
-    console.log(`Task 4`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName4, String(data.testString));
   };
 
   const task5 = async () => {
-    console.log(`Task 5`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName5, String(data.testString));
   };
 
   const task6 = async () => {
-    console.log(`Task 6`);
+    const { writeFile } = require("node:fs/promises");
+    await writeFile(data.testFileName6, String(data.testString));
   };
 
   const id1 = await m.schedule({
@@ -352,8 +365,27 @@ metatests.test("Should handle multiple task simultaneously", async (test) => {
 
   await m.stop();
 
-  await rmdir(data.tasksPath);
+  const value1 = await readFile(data.testFileName1, { encoding: "utf-8" });
+  const value2 = await readFile(data.testFileName2, { encoding: "utf-8" });
+  const value3 = await readFile(data.testFileName3, { encoding: "utf-8" });
+  const value4 = await readFile(data.testFileName4, { encoding: "utf-8" });
+  const value5 = await readFile(data.testFileName5, { encoding: "utf-8" });
+  const value6 = await readFile(data.testFileName6, { encoding: "utf-8" });
 
-  test.pass();
+  test.strictSame(value1, data.testString);
+  test.strictSame(value2, data.testString);
+  test.strictSame(value3, data.testString);
+  test.strictSame(value4, data.testString);
+  test.strictSame(value5, data.testString);
+  test.strictSame(value6, data.testString);
+
+  await rmdir(data.tasksPath);
+  await rm(data.testFileName1);
+  await rm(data.testFileName2);
+  await rm(data.testFileName3);
+  await rm(data.testFileName4);
+  await rm(data.testFileName5);
+  await rm(data.testFileName6);
+
   test.end();
 });
